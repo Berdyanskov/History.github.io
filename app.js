@@ -6,6 +6,7 @@ const names={1:'Flag of the Guji Detachment of the Chinese Yimin Red Army',2:'Gu
 const items=window.EXHIBITS.slice().sort((a,b)=>a.id-b.id).map(e=>({...e,en:names[e.id]}));
 let current=-1,busy=false,museum=null,fallback=false,detailIndex=0,lastFocus=null,qrURL=null,toastTimer;
 let saved=null,visited=new Set();
+let fallbackReason='';
 try{saved=JSON.parse(localStorage.getItem('hometown-tour-v2'));if(saved&&Number.isInteger(saved.index)&&saved.index>=0&&saved.index<=7){visited=new Set((saved.visited||[]).filter(n=>Number.isInteger(n)&&n>=0&&n<7));$('#resume').hidden=false;$('#resume').textContent=saved.index===7?'重温上次的展览结语 →':`继续上次的游览 · 第 ${saved.index+1} 件 →`;}else saved=null;}catch{}
 let reduced=matchMedia('(prefers-reduced-motion: reduce)').matches,low=false;
 function notify(text){clearTimeout(toastTimer);$('#toast').textContent=text;$('#toast').hidden=false;toastTimer=setTimeout(()=>$('#toast').hidden=true,4200);}
@@ -103,19 +104,20 @@ function share(){
 }
 $('#share-start').onclick=share;$('#share-end').onclick=share;
 $('#copy-url').onclick=async()=>{try{await navigator.clipboard.writeText($('#share-url').value);$('#share-status').textContent='展览链接已复制。';}catch{$('#share-url').select();$('#share-status').textContent='请长按或按 Ctrl/Cmd+C 复制已选中的网址。';}};
-function enableFallback(){fallback=true;$('#world').style.background='radial-gradient(ellipse at 70% 30%,#475244,#121b16 75%)';if(museum?.renderer)museum.renderer.domElement.style.display='none';$('#mode-notice').hidden=false;if(museum)museum.available=false;render();}
+$('#retry-3d').onclick=()=>location.reload();
+function enableFallback(reason='三维画面初始化失败'){fallbackReason=reason;fallback=true;$('#mode-notice').textContent=`已切换图文模式：${reason}。可点击下方按钮重新尝试。`;$('#retry-3d').hidden=false;$('#world').style.background='radial-gradient(ellipse at 70% 30%,#475244,#121b16 75%)';if(museum?.renderer)museum.renderer.domElement.style.display='none';$('#mode-notice').hidden=false;if(museum)museum.available=false;render();}
 async function routeHash(instant=false){const m=location.hash.match(/^#(?:chapter|exhibit)-(\d+)$/);if(m){const index=items.findIndex(e=>e.id===Number(m[1]));if(index>=0){await go(index,{instant,hash:false});if(location.hash.startsWith('#exhibit-'))openDetail(index);}}else if(location.hash==='#ending')await go(7,{instant,hash:false});else if(location.hash==='#entrance')await go(-1,{instant,hash:false});}
 window.addEventListener('hashchange',()=>{if(!busy)routeHash();});
 async function init(){
  render();controls(true);updateSettings();
  if(window.MUSEUM_OFFLINE)document.querySelectorAll('[href="downloads/hometown-museum.zip"]').forEach(a=>a.hidden=true);
  try{
-   museum=new HistoryMuseum($('#world'),items,{progress:n=>$('#load-progress').textContent=`正在布置文物 ${n} / 7`,select:async i=>{if(busy)return;if(current!==i)await go(i);openDetail(i);},project:(x,y,visible)=>{if(current<0||current>6||busy||fallback)return;const el=$('#artifact-hotspot');el.hidden=!visible;el.style.left=`${Math.max(135,Math.min(innerWidth-135,x))}px`;el.style.top=`${Math.max(290,Math.min(innerHeight-(innerWidth<600?150:125),y))}px`;},lost:()=>{enableFallback();notify('三维画面已切换为图文模式，可以继续游览。');}});
-   museum.reduced=reduced;await museum.init();
- }catch(error){console.warn('Gallery fallback:',error.message);enableFallback();}
+   museum=new HistoryMuseum($('#world'),items,{progress:n=>$('#load-progress').textContent=`正在布置文物 ${n} / 7`,select:async i=>{if(busy)return;if(current!==i)await go(i);openDetail(i);},project:(x,y,visible)=>{if(current<0||current>6||busy||fallback)return;const el=$('#artifact-hotspot');el.hidden=!visible;el.style.left=`${Math.max(135,Math.min(innerWidth-135,x))}px`;el.style.top=`${Math.max(290,Math.min(innerHeight-(innerWidth<600?150:125),y))}px`;},lost:()=>{enableFallback('浏览器中断了图形渲染，可能是设备资源不足');notify('可点击重新尝试 3D，或在系统浏览器中打开。');}});
+   museum.reduced=reduced;await museum.init();low=museum.low;updateSettings();
+ }catch(error){console.warn('Gallery fallback:',error.message);enableFallback(error.message||'初始化失败');}
  $('#loading').classList.add('ready');setTimeout(()=>$('#loading').hidden=true,650);controls(false);await routeHash(true);document.body.dataset.ready='true';
 }
 init();
 // Read-only test/diagnostic state, useful for classroom setup and browser checks.
-window.galleryState=()=>({current,busy,fallback,visited:[...visited],zoom,position:museum?.camera?.position.toArray(),renderer:museum?.renderer?.info.render});
+window.galleryState=()=>({current,busy,fallback,fallbackReason,webglVersion:museum?.webglVersion,imageStatus:museum?.imageStatus,visited:[...visited],zoom,position:museum?.camera?.position.toArray(),renderer:museum?.renderer?.info.render});
 })();

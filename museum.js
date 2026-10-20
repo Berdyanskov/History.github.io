@@ -1,27 +1,49 @@
 /* A real-time, locally bundled Three.js gallery. All historical images come from assets/. */
 window.HistoryMuseum = class HistoryMuseum {
   constructor(host, exhibits, hooks={}) {
-    this.host=host;this.exhibits=exhibits;this.hooks=hooks;this.available=false;this.current=-1;this.moving=false;this.paused=false;this.low=false;this.reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.host=host;this.exhibits=exhibits;this.hooks=hooks;this.available=false;this.current=-1;this.moving=false;this.paused=false;this.mobile=matchMedia('(pointer: coarse)').matches||innerWidth<700;this.low=this.mobile;this.reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.positions=exhibits.map((_,i)=>-19.2+i*6.4);this.targets=[];this.imageMeshes=[];this.textures=[];this.look=new THREE.Vector3(0,2.8,-5);this.offset={x:0,y:0};this.goalOffset={x:0,y:0};this.lastTime=0;this.needsRender=true;
   }
   async init() {
     const T=THREE;
-    this.renderer=new T.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio,innerWidth<700?1.5:2));this.renderer.setSize(innerWidth,innerHeight);
+    const canvas=document.createElement('canvas');
+    const options={antialias:!this.mobile,alpha:false,powerPreference:'default',stencil:false};
+    const context=canvas.getContext('webgl2',options)||canvas.getContext('webgl',options)||canvas.getContext('experimental-webgl',options);
+    if(!context)throw new Error('浏览器未提供 WebGL，请在系统浏览器中重试');
+    this.renderer=new T.WebGLRenderer({...options,canvas,context});
+    this.webglVersion=this.renderer.capabilities.isWebGL2?2:1;
+    if(this.webglVersion===1)this.low=true;
+    this.renderer.setPixelRatio(this.low?1:Math.min(devicePixelRatio,2));this.renderer.setSize(innerWidth,innerHeight);
     this.renderer.outputColorSpace=T.SRGBColorSpace;this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.05;
     this.host.appendChild(this.renderer.domElement);
     this.scene=new T.Scene();this.scene.background=new T.Color('#171b1b');this.scene.fog=new T.FogExp2('#181c1b',.012);
     this.camera=new T.PerspectiveCamera(innerWidth<650?64:56,innerWidth/innerHeight,.08,150);
-    const pm=new T.PMREMGenerator(this.renderer);this.env=pm.fromScene(new T.RoomEnvironment(),.03);this.scene.environment=this.env.texture;pm.dispose();
+    if(!this.low){const pm=new T.PMREMGenerator(this.renderer);this.env=pm.fromScene(new T.RoomEnvironment(),.03);this.scene.environment=this.env.texture;pm.dispose();}
     this.scene.add(new T.HemisphereLight(0xdce2de,0x24221e,.85));this.scene.add(new T.AmbientLight(0xffe8c3,.2));
     const key=new T.DirectionalLight(0xf4dfb8,1.1);key.position.set(4,9,9);this.scene.add(key);
     const fill=new T.DirectionalLight(0xc1d2d0,.5);fill.position.set(-20,5,5);this.scene.add(fill);
+    // Slow or failed downloads must not disable an otherwise working 3D gallery.
+    this.imageStatus=this.exhibits.map(()=> 'loading');
+    const dimensions={1:[801,1000],2:[1600,2400],3:[600,827],4:[1080,690],5:[1937,1280],6:[1044,1145],7:[388,383]};
     await Promise.all(this.exhibits.map((e,i)=>new Promise(resolve=>{
-      const img=new Image();let settled=false;const done=(ok)=>{if(settled)return;settled=true;clearTimeout(timer);if(ok){const tx=new T.Texture(img);tx.colorSpace=T.SRGBColorSpace;tx.anisotropy=Math.min(8,this.renderer.capabilities.getMaxAnisotropy());tx.needsUpdate=true;this.textures[i]=tx;}this.hooks.progress?.(this.textures.filter(Boolean).length);resolve();};
-      const timer=setTimeout(()=>done(false),12000);img.onload=()=>done(true);img.onerror=()=>done(false);img.src=e.image;
+      const [w,h]=dimensions[e.id];
+      const tx=this.canvasTexture(512,Math.round(512*h/w),(c,cw,ch)=>{c.fillStyle='#222a26';c.fillRect(0,0,cw,ch);c.fillStyle='#cbb58a';c.textAlign='center';c.font='20px sans-serif';c.fillText('文物图片正在载入',cw/2,ch/2);});
+      this.textures[i]=tx;
+      const img=new Image();this.imageStatus[i]='loading';
+      const timer=setTimeout(resolve,5000);
+      img.onload=()=>{
+        clearTimeout(timer);this.imageStatus[i]='loaded';
+        // Bound GPU texture memory while keeping the original in the detail viewer.
+        const limit=this.mobile?1024:2048;const scale=Math.min(1,limit/Math.max(img.width,img.height));
+        const source=document.createElement('canvas');source.width=Math.round(img.width*scale);source.height=Math.round(img.height*scale);source.getContext('2d').drawImage(img,0,0,source.width,source.height);
+        tx.image=source;tx.needsUpdate=true;
+        if(this.monitorTextures){this.monitorTextures[i].dispose();this.caseTextures[i].dispose();this.monitorTextures[i]=this.letterbox(tx,16/9);this.caseTextures[i]=this.letterbox(tx,1.6/.66);if(this.caseMeshes?.[i])this.caseMeshes[i].material.map=this.caseTextures[i];this.monitorIndex=-1;}
+        this.needsRender=true;this.hooks.progress?.(this.imageStatus.filter(s=>s==='loaded').length);resolve();
+      };
+      img.onerror=()=>{clearTimeout(timer);this.imageStatus[i]='failed';const c=tx.image.getContext('2d');c.fillStyle='#222a26';c.fillRect(0,0,tx.image.width,tx.image.height);c.fillStyle='#cbb58a';c.textAlign='center';c.font='18px sans-serif';c.fillText('图片暂未加载 · 点击查看原图',tx.image.width/2,tx.image.height/2);tx.needsUpdate=true;this.needsRender=true;resolve();};
+      img.src=e.image;
     })));
-    if(this.textures.filter(Boolean).length!==7)throw Error('部分文物图片未能载入');
-    this.monitorTextures=this.textures.map(t=>this.letterbox(t,16/9));this.caseTextures=this.textures.map(t=>this.letterbox(t,1.6/.66));this.build();this.available=true;this.setHome(true);this.events();this.animate(0);return this;
+    this.monitorTextures=this.textures.map(t=>this.letterbox(t,16/9));this.caseTextures=this.textures.map(t=>this.letterbox(t,1.6/.66));this.build();this.setLow(this.low);this.available=true;this.setHome(true);this.events();this.animate(0);return this;
   }
   canvasTexture(w,h,draw){const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;return t;}
   letterbox(texture,aspect){return this.canvasTexture(1024,Math.round(1024/aspect),(c,w,h)=>{c.fillStyle='#1a201d';c.fillRect(0,0,w,h);const img=texture.image;const k=Math.min(w/img.width,h/img.height);c.drawImage(img,(w-img.width*k)/2,(h-img.height*k)/2,img.width*k,img.height*k);});}
@@ -54,6 +76,7 @@ window.HistoryMuseum = class HistoryMuseum {
     this.box(53,.035,.035,0,.18,-12.23,gold);
     this.text('家 乡 的 物 件     /     近 现 代 史 记 忆',25,.75,0,7.4,-12.22,56,'#ded3bd');
     // Seven original photographic exhibits on the continuous narrative wall.
+    this.caseMeshes=[];
     this.exhibits.forEach((e,i)=>{
       const x=this.positions[i];const image=this.textures[i].image;const ratio=image.width/image.height;let h=2.85,w=h*ratio;if(w>3.8){w=3.8;h=w/ratio;}
       this.box(6.2,5.8,.12,x,3.5,-12.21,i%2?this.mat('#242728',.94):this.mat('#202424',.92));
@@ -65,11 +88,11 @@ window.HistoryMuseum = class HistoryMuseum {
       this.text(e.en,5.5,.28,x,1.57,-12.04,32,'#a8b3a8');
       this.box(5.9,.16,1.35,x,.9,-11.45,stone);this.box(5.8,.03,1.25,x,.8,-11.45,gold);this.box(5.2,.36,.8,x,.55,-11.7,black);
       // Recessed vitrines display the provided images as documentary facsimiles.
-      const frame=this.box(2,.10,.8,x,.99,-11.35,black);const mini=this.plane(1.6,.66,x,1.055,-11.35,new T.MeshBasicMaterial({map:this.caseTextures[i],toneMapped:false}));mini.rotation.x=-Math.PI/2;
+      const frame=this.box(2,.10,.8,x,.99,-11.35,black);const mini=this.plane(1.6,.66,x,1.055,-11.35,new T.MeshBasicMaterial({map:this.caseTextures[i],toneMapped:false}));mini.rotation.x=-Math.PI/2;this.caseMeshes[i]=mini;
       this.box(2.1,.28,.88,x,1.15,-11.35,new T.MeshPhysicalMaterial({color:'#b3c9c1',transparent:true,opacity:.10,roughness:.15,metalness:.1,depthWrite:false}));
       this.text('图像档案  /  DOCUMENTARY DISPLAY',2.5,.15,x+1.45,1.15,-10.75,29,'#d1c4aa');
       this.glow(6,3,x,5.7,-12.03,'#edc992',.16);
-      const spot=new T.SpotLight(0xffe4b6,40,13,.65,.85,1.5);spot.position.set(x,7.4,-8);spot.target.position.set(x,3.5,-12);this.scene.add(spot,spot.target);
+      if(!this.low){const spot=new T.SpotLight(0xffe4b6,40,13,.65,.85,1.5);spot.position.set(x,7.4,-8);spot.target.position.set(x,3.5,-12);this.scene.add(spot,spot.target);}
     });
     // Left: a luminous circular calligraphic installation on a dark sculptural base.
     const ringGroup=new T.Group();ringGroup.position.set(-14,0,3);ringGroup.rotation.y=.28;this.scene.add(ringGroup);

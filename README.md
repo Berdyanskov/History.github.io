@@ -12,7 +12,7 @@
 - 方向键前进/后退，空格翻篇，Enter 查看当前文物，Esc 关闭详情，F 全屏，M 目录。
 - 展厅可拖动环顾；目录支持跳转，浏览进度保存在当前浏览器。
 - 右上角帮助支持减少动画、流畅模式。系统减少动态效果设置也会自动生效。
-- 不支持 WebGL 2 或图形上下文丢失时自动提供可完整游览的图文模式。
+- 不支持 WebGL 或图形上下文丢失时自动提供可完整游览的图文模式。
 - 结语画面可下载课堂离线包；分享窗口生成本地二维码，不依赖第三方二维码服务。
 
 ## 本地启动
@@ -29,7 +29,7 @@ python -m http.server 4173
 python scripts/package.py
 ```
 
-生成 `downloads/hometown-museum.zip`。解压后直接打开其中的 `index.html`：脚本、样式、七张原图和文字源文件均内嵌，可断网使用。无需本地服务器。浏览器需要启用 JavaScript；三维模式需要 WebGL 2。二维码仍指向在线版。
+生成 `downloads/hometown-museum.zip`。解压后直接打开其中的 `index.html`：脚本、样式、七张原图和文字源文件均内嵌，可断网使用。无需本地服务器。浏览器需要启用 JavaScript；三维模式兼容 WebGL 1 与 WebGL 2。二维码仍指向在线版。
 
 ## 发布
 
@@ -41,7 +41,7 @@ GitHub 仓库 Settings → Pages → Source 选择 GitHub Actions。推送 `main
 - `app.js`：游览状态、详情、图片查看器、触控、目录、进度、分享、故障回退。
 - `index.html` / `styles.css`：全屏参观界面，手机布局与无障碍操作。
 - `exhibits.js`：课程提供素材的阅读版介绍、年代说明。`assets/` 原始文件完全保留。
-- `vendor/three.min.js`：Three.js 0.170.0 与 Reflector、RoomEnvironment，本地 IIFE 包。
+- `vendor/three.min.js`：Three.js 0.160.1 与 Reflector、RoomEnvironment，本地 IIFE 包。
 - `vendor/qrcode.js`：qrcode-generator 1.4.4。
 - `scripts/package.py`：离线包生成器。
 - `scripts/test_browser.py`：浏览器功能回归与截图检查，使用 Python Playwright。
@@ -59,3 +59,5 @@ GitHub 仓库 Settings → Pages → Source 选择 GitHub Actions。推送 `main
 已通过 Chromium 桌面（1440×900）、手机触控（390×844）、离线单文件及禁用 WebGL 的降级测试。覆盖入口镜头推进、三维照片点击、七章完整游览、原图缩放/拖动/双指操作、结语七图、目录、键盘、全屏、二维码下载和断网运行。未发现未捕获的 JavaScript 错误。全部 14 个原始素材文件经 SHA-256 比对，与改版前逐字节一致。
 
 尚未在每一款实际手机及浏览器上测试；低性能设备可开启流畅模式。测试记录和截图在本地 `artifacts/`，不随网页部署。
+
+手机端默认使用轻量 3D 渲染，限制 GPU 图片尺寸并关闭实时地面反射。文物原图在详情中保持完整；图片下载缓慢或失败不会退出三维展厅。回退提示显示具体原因并提供重试。
