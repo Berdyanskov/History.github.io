@@ -25,9 +25,11 @@ jobs:
         run: |
           node --check app.js
           node --check exhibits.js
+          node --check museum.js
+          python scripts/package.py
           mkdir -p _site
-          cp index.html styles.css app.js exhibits.js favicon.svg .nojekyll _site/
-          cp -r assets vendor _site/
+          cp index.html styles.css app.js museum.js exhibits.js favicon.svg .nojekyll _site/
+          cp -r assets vendor downloads _site/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

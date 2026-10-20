@@ -2,3 +2,5 @@ assets.zip
 _site/
 __pycache__/
 .DS_Store
+downloads/
+artifacts/
