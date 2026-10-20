@@ -16,7 +16,7 @@ with sync_playwright() as p:
  page=ctx.new_page();page.route('**/assets/2.png',lambda route:route.abort())
  page.goto('http://127.0.0.1:4173/');page.wait_for_function('document.body.dataset.ready==="true"',timeout=90000)
  assert not page.evaluate('galleryState().fallback')
- assert page.evaluate('galleryState().imageStatus[1]')=='failed'
+ assert page.evaluate('galleryState().imageStatus[3]')=='failed'
  print('PASS: image failure no longer disables 3D',flush=True)
  page.close()
  page=ctx.new_page()
@@ -25,9 +25,9 @@ with sync_playwright() as p:
  page.route('**/assets/3.png',lambda route:held.append(route))
  page.goto('http://127.0.0.1:4173/',wait_until='domcontentloaded');page.wait_for_function('document.body.dataset.ready==="true"',timeout=90000)
  assert not page.evaluate('galleryState().fallback')
- assert page.evaluate('galleryState().imageStatus[2]')=='loading'
+ assert page.evaluate('galleryState().imageStatus[4]')=='loading'
  for route in held:route.continue_()
- page.wait_for_function('galleryState().imageStatus[2]==="loaded"',timeout=30000)
+ page.wait_for_function('galleryState().imageStatus[4]==="loaded"',timeout=30000)
  assert not page.evaluate('galleryState().fallback')
  print('PASS: late image loads into an already running 3D scene',flush=True)
  b.close()

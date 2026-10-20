@@ -28,7 +28,7 @@ with sync_playwright() as p:
  # Pick the photo itself by raycasting, not just its HTML hotspot.
  page.mouse.click(720,390)
  page.wait_for_selector('#detail[open]',timeout=15000)
- assert '队旗' in page.locator('#detail-title').inner_text()
+ assert '崇思楼' in page.locator('#detail-title').inner_text()
  page.screenshot(path=str(OUT/'detail-desktop.png'))
  page.locator('#zoom-in').click();assert page.evaluate('galleryState().zoom')>1
  page.locator('#zoom-in').click();page.locator('#zoom-in').click()
@@ -45,7 +45,7 @@ with sync_playwright() as p:
   settled(page,i)
   if i==0:page.locator('#artifact-hotspot').click()
   else:page.locator('#artifact-hotspot').click()
-  assert page.locator('#detail-image').get_attribute('src')==f'assets/{i+1}.jpg' if i==5 else page.locator('#detail-image').get_attribute('src')==f'assets/{i+1}.png'
+  assert page.locator('#detail-image').get_attribute('src')==['assets/4.png','assets/6.jpg','assets/7.png','assets/2.png','assets/3.png','assets/1.png','assets/5.png'][i]
   assert len(page.locator('#detail-text').inner_text())>60
   page.locator('#detail-next').click()
  settled(page,7)
@@ -54,7 +54,7 @@ with sync_playwright() as p:
  page.screenshot(path=str(OUT/'ending-desktop.png'))
  assert len(page.evaluate('galleryState().visited'))==7
  passed('All seven original images and full descriptions; complete sequential tour; all-image closing screen with exact requested sentence')
- page.locator('.ending-item').nth(3).click();assert '崇思楼' in page.locator('#detail-title').inner_text();page.keyboard.press('Escape')
+ page.locator('.ending-item').nth(0).click();assert '崇思楼' in page.locator('#detail-title').inner_text();page.keyboard.press('Escape')
  page.locator('#share-end').click();assert page.locator('#qr svg').count()==1
  with page.expect_download() as dl:page.locator('#download-qr').click()
  dl.value.save_as(str(OUT/'share-qr.svg'));page.keyboard.press('Escape')

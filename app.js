@@ -2,15 +2,15 @@
 'use strict';
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const names={1:'Flag of the Guji Detachment of the Chinese Yimin Red Army',2:'Gutian Conference Resolution · Yan’an Edition',3:'The Central Archives and the August 7 Meeting Manuscript',4:'Chongsi Building, Xuhui High School',5:'Xuzhou Railway Station and Railways',6:'Painting of the Anyang Railway Workers’ Strike',7:'Copper Ink Box Commemorating the Andong Salt Workers’ Uprising'};
-const items=window.EXHIBITS.slice().sort((a,b)=>a.id-b.id).map(e=>({...e,en:names[e.id]}));
+const names={1:'Flag of the Guji Detachment of the Chinese Yimin Red Army',2:'Gutian Conference Resolution · Yan’an Edition',3:'August 7 Meeting Manuscript · Handwritten by Deng Xiaoping',4:'Chongsi Building, Xuhui High School',5:'Xuzhou Railway Station and Railways',6:'Painting of the Anyang Railway Workers’ Strike',7:'Copper Ink Box Commemorating the Andong Salt Workers’ Uprising'};
+const items=window.EXHIBITS.map(e=>({...e,en:names[e.id]}));
 let current=-1,busy=false,museum=null,fallback=false,detailIndex=0,lastFocus=null,qrURL=null,toastTimer;
 let saved=null,visited=new Set();
 let fallbackReason='';
-try{saved=JSON.parse(localStorage.getItem('hometown-tour-v2'));if(saved&&Number.isInteger(saved.index)&&saved.index>=0&&saved.index<=7){visited=new Set((saved.visited||[]).filter(n=>Number.isInteger(n)&&n>=0&&n<7));$('#resume').hidden=false;$('#resume').textContent=saved.index===7?'重温上次的展览结语 →':`继续上次的游览 · 第 ${saved.index+1} 件 →`;}else saved=null;}catch{}
+try{saved=JSON.parse(localStorage.getItem('hometown-tour-v3'));if(saved&&Number.isInteger(saved.index)&&saved.index>=0&&saved.index<=7){visited=new Set((saved.visited||[]).filter(n=>Number.isInteger(n)&&n>=0&&n<7));$('#resume').hidden=false;$('#resume').textContent=saved.index===7?'重温上次的展览结语 →':`继续上次的游览 · 第 ${saved.index+1} 件 →`;}else saved=null;}catch{}
 let reduced=matchMedia('(prefers-reduced-motion: reduce)').matches,low=false;
 function notify(text){clearTimeout(toastTimer);$('#toast').textContent=text;$('#toast').hidden=false;toastTimer=setTimeout(()=>$('#toast').hidden=true,4200);}
-function remember(){try{localStorage.setItem('hometown-tour-v2',JSON.stringify({index:current,visited:[...visited]}));}catch{}}
+function remember(){try{localStorage.setItem('hometown-tour-v3',JSON.stringify({index:current,visited:[...visited]}));}catch{}}
 function controls(disabled){$('#next').disabled=disabled;$('#previous').disabled=disabled;$('#start').disabled=disabled;$('#resume').disabled=disabled;document.querySelectorAll('#route-dots button').forEach(b=>b.disabled=disabled);}
 function renderDirectory(){
  $('#map-list').innerHTML=items.map((e,i)=>`<button class="map-item ${current===i?'active':''}" data-visit="${i}"><img src="${e.image}" alt="${esc(e.title)}"><span><small>CHAPTER ${String(i+1).padStart(2,'0')} · ${esc(e.year)}</small><strong>${esc(e.title)}</strong></span>${visited.has(i)?'<em>已读</em>':''}</button>`).join('');
