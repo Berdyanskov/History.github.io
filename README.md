@@ -27,6 +27,12 @@ python -m http.server 4173
 
 GitHub 官方说明：https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages
 
+## 验证记录
+
+已使用 Chromium 验证桌面（1440px）及手机（390px）布局，以及七组详情、筛选、搜索、空结果、详情直达链接、前后切换和二维码下载，未发现 JavaScript 运行错误。
+
+`exhibition-qr.svg` 为预定网址的二维码，部署完成后才可使用。
+
 ## 修改内容
 
 - `assets/`：原始图片与文字，保留原样。
