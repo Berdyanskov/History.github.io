@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#812e2b"><meta name="description" content="从七组历史素材出发，走进中国近现代历史。课程线上展厅：时代留痕。">
+<title>时代留痕 · 中国近现代历史线上展厅</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css">
+<script defer src="vendor/qrcode.js"></script><script defer src="exhibits.js"></script><script defer src="app.js"></script>
+</head>
+<body>
+<a class="skip" href="#collection">跳至展品</a>
+<header class="header"><a class="brand" href="#"><span class="seal" aria-hidden="true">史</span><span>时代留痕<small>中国近现代历史 · 课程线上展厅</small></span></a><nav aria-label="主导航"><a href="#collection">走进展厅</a><a href="#timeline">历史坐标</a><button class="share-trigger">分享展览 ↗</button></nav></header>
+<main>
+<section class="hero">
+<div class="hero-copy"><p class="eyebrow">THE PAST, IN THE PRESENT</p><p class="overline">中国近现代历史 · 数字微展览</p><h1>时代留痕<span>在物件中，<br>与历史相遇。</span></h1><p class="intro">一面队旗，一页文稿，一座校舍。<br>沿着七组历史素材留下的线索，<br>读懂时代变迁中的选择、抗争与守护。</p><a class="primary" href="#collection">开启观展 <span>↓</span></a><div class="hero-meta"><span><b>07</b> 组展陈素材</span><span><b>03</b> 条主题线索</span></div></div>
+<figure class="hero-image"><img src="assets/4.png" alt="徐汇中学崇思楼的红砖立面与钟楼" fetchpriority="high"><figcaption><span>展陈选影 / 01</span><strong>红砖之间，百年回响</strong><span>徐汇中学崇思楼 · 始建于 1917 年</span></figcaption><div class="photo-label" aria-hidden="true">历史的细节<br>就在眼前</div></figure>
+<div class="hero-bottom"><span>由物入史 · 以史观今</span><span>SCROLL TO EXPLORE ↓</span></div>
+</section>
+<section class="curator"><p class="eyebrow">CURATOR’S NOTE / 策展导言</p><p>历史不只在书页上。它也藏在校舍的砖墙里、铁路的延伸中，以及被郑重保存的一纸一物之间。本展以<strong>近代教育、交通与社会、革命与守护</strong>三条线索，将不同形式的历史材料并置阅读。</p></section>
+<section class="collection section" id="collection"><div class="section-heading"><div><p class="eyebrow">01 / THE COLLECTION</p><h2>循物见史</h2></div><p>让每一件展品，讲述自己的时代。</p></div>
+<div class="toolbar"><div class="filters" role="group" aria-label="按主题筛选"><button class="active" data-filter="全部" aria-pressed="true">全部展品 <span>07</span></button><button data-filter="近代教育" aria-pressed="false">近代教育</button><button data-filter="交通与社会" aria-pressed="false">交通与社会</button><button data-filter="革命与守护" aria-pressed="false">革命与守护</button></div><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="搜索展品、地点、年代" aria-label="搜索展品、地点、年代"></label></div><p id="result-count" class="result-count" aria-live="polite"></p><div id="exhibits" class="grid"></div><p id="empty" hidden>没有找到相关展品，请尝试其他关键词或主题。</p>
+</section>
+<section id="timeline" class="timeline section"><div class="section-heading"><div><p class="eyebrow">02 / HISTORICAL COORDINATES</p><h2>把物件，放回时代</h2></div><p>这里的时间，标注的是事件或材料的历史坐标。</p></div><div id="timeline-items" class="timeline-items"></div><p class="timeline-note">时间线中的事件年代、建筑年代与文献版本年代含义不同；具体说明见各展品详情。徐州铁路专题涉及清末以来的长期变迁。</p></section>
+<section class="reflection section"><p class="eyebrow">03 / LOOK CLOSER</p><h2>看见展品之后，<br>再多问一个问题。</h2><div><p>这是什么类型的历史材料？<br>它留下了谁的声音？<br>还有哪些故事，需要其他史料来补充？</p><span>带着问题观展，让历史从记忆走向理解。</span></div></section>
+</main>
+<footer><a class="brand" href="#"><span class="seal" aria-hidden="true">史</span><span>时代留痕<small>中国近现代历史 · 课程线上展厅</small></span></a><p>本展根据课程提供的七组图片与文字材料整理。<br>图片、原始说明的来源与权属以素材提供者说明为准；本站为课程展示，非馆方官方网站。</p><button class="share-trigger">扫码，继续观展 ↗</button></footer>
+<dialog id="detail" aria-labelledby="detail-title"><button class="close" aria-label="关闭展品详情">×</button><div id="detail-content"></div></dialog>
+<dialog id="share" aria-labelledby="share-title"><button class="close" aria-label="关闭分享窗口">×</button><p class="eyebrow">TAKE HISTORY WITH YOU</p><h2 id="share-title">把展览，分享出去</h2><p>扫码打开线上展厅，也可以收藏网址稍后阅读。</p><div id="qr"></div><p id="share-status" role="status"></p><label class="url-label">展览网址<input id="share-url" readonly></label><div class="share-actions"><button id="copy-url" class="primary">复制链接</button><a id="download-qr" class="secondary" download="时代留痕-展览二维码.svg">下载二维码</a></div></dialog>
+<noscript><p class="noscript">请启用 JavaScript 以浏览完整展览。原始材料：<a href="assets/1.txt">队旗</a>、<a href="assets/2.txt">古田会议决议</a>、<a href="assets/3.txt">中央文库</a>、<a href="assets/4.txt">崇思楼</a>、<a href="assets/5.txt">徐州铁路</a>、<a href="assets/6.txt">罢工油画</a>、<a href="assets/7.txt">铜墨盒</a>。</p></noscript>
+</body></html>
