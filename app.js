@@ -8,7 +8,7 @@ function render() {
   const found = exhibits.filter(e => (filter === '全部' || e.category === filter) && [e.title,e.year,e.place,e.summary,e.text].join(' ').toLowerCase().includes(term));
   $('#result-count').textContent = `正在展出 ${String(found.length).padStart(2,'0')} / 07 组素材`;
   $('#empty').hidden = found.length !== 0;
-  $('#exhibits').innerHTML = found.map(e => `<button class="exhibit" data-id="${e.id}" aria-label="查看${escapeHTML(e.title)}详情"><div class="exhibit-image"><img src="${e.image}" alt="${escapeHTML(e.title)}" loading="lazy" width="600" height="600"><span class="item-number">NO. ${String(e.id).padStart(2,'0')}</span></div><div class="card-meta"><span>${e.category}</span><span>${e.year}</span></div><h3>${e.headline}</h3><p class="summary">${e.summary}</p><div class="card-bottom"><span>${e.title}</span><span aria-hidden="true">↗</span></div></button>`).join('');
+  $('#exhibits').innerHTML = found.map(e => `<button class="exhibit" data-id="${e.id}" aria-label="查看${escapeHTML(e.title)}详情"><div class="exhibit-image"><img src="${e.image}" alt="${escapeHTML(e.title)}" loading="lazy" width="600" height="600"><span class="item-number">NO. ${String(e.id).padStart(2,'0')}</span></div><div class="card-meta"><span>${e.category}</span><span>${e.year}</span></div><h3>${escapeHTML(e.title)}</h3><p class="summary">${e.summary}</p><div class="card-bottom"><span>${e.kind} · ${e.place}</span><span aria-hidden="true">↗</span></div></button>`).join('');
 }
 function showDetail(id) {
  const e=exhibits.find(e=>e.id===Number(id)); if(!e)return;
